@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envio English Level Test - Бишкек</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo-container {
+            margin-bottom: 20px;
+        }
+
+        .logo-container svg {
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+        }
+
+        .subtitle {
+            color: #6B7280;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #E5E7EB;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8B5CF6, #A855F7);
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .question-card:hover {
+            border-color: #8B5CF6;
+            transform: translateY(-2px);
+        }
+
+        .question-number {
+            color: #8B5CF6;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            color: #1F2937;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+        }
+
+        .option {
+            padding: 15px 20px;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            font-size: 1.1em;
+            position: relative;
+        }
+
+        .option:hover {
+            border-color: #8B5CF6;
+            background: #F3F4F6;
+            transform: translateX(5px);
+        }
+
+        .option.selected {
+            border-color: #8B5CF6;
+            background: linear-gradient(45deg, #8B5CF6, #A855F7);
+            color: white;
+        }
+
+        .option.correct {
+            border-color: #10B981;
+            background: #10B981;
+            color: white;
+        }
+
+        .option.incorrect {
+            border-color: #EF4444;
+            background: #EF4444;
+            color: white;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #8B5CF6, #A855F7);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6B7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4B5563;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-card {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        .result-score {
+            font-size: 3em;
+            font-weight: bold;
+            color: #8B5CF6;
+            margin-bottom: 20px;
+        }
+
+        .result-level {
+            font-size: 1.5em;
+            color: #1F2937;
+            margin-bottom: 30px;
+        }
+
+        .result-description {
+            color: #6B7280;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .contact-info {
+            background: linear-gradient(45deg, #8B5CF6, #A855F7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .user-info-form {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1F2937;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 1.1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #8B5CF6;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.success {
+            background: #10B981;
+        }
+
+        .notification.error {
+            background: #EF4444;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .question-text {
+                font-size: 1.1em;
+            }
+            
+            .option {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <img src="/envio.jpg" alt="Envio Language Center" style="max-width: 200px; height: auto; border-radius: 10px;">
+            </div>
+            <div class="subtitle">Тест на уровень английского языка • Бишкек</div>
+        </div>
+
+        <div id="user-info-container">
+            <div class="user-info-form">
+                <h2 style="text-align: center; color: #1F2937; margin-bottom: 30px;">Информация о студенте</h2>
+                
+                <div class="form-group">
+                    <label for="student-name">Ваше имя:</label>
+                    <input type="text" id="student-name" placeholder="Введите ваше имя" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="student-phone">Номер телефона:</label>
+                    <input type="tel" id="student-phone" placeholder="+996 XXX XXX XXX" required>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn btn-primary" onclick="startQuiz()">Начать тест</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="quiz-container" class="hidden">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress"></div>
+            </div>
+
+            <div class="question-card" id="question-card">
+                <div class="question-number" id="question-number">Вопрос 1 из 30</div>
+                <div class="question-text" id="question-text"></div>
+                <div class="options" id="options"></div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-secondary" id="prev-btn" onclick="previousQuestion()">← Назад</button>
+                <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()">Далее →</button>
+            </div>
+        </div>
+
+        <div id="result-container" class="hidden">
+            <div class="result-card">
+                <div class="result-score" id="result-score">0/30</div>
+                <div class="result-level" id="result-level">Уровень: Beginner</div>
+                <div class="result-description" id="result-description"></div>
+                
+                <div class="contact-info">
+                    <h3>Готовы улучшить свой английский?</h3>
+                    <p>Приходите в Envio - курсы английского языка в Бишкеке!</p>
+                    <p><strong>📞 Телефон:</strong> +996 551 88 77 85</p>
+                    <p><strong>📍 Адрес:</strong> г. Бишкек, пр. Чынгыза айтматова, 4</p>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Telegram Bot Configuration
+        const TELEGRAM_BOT_TOKEN = '8095854142:AAH6s7G9bxMIewdw90tqcrl042gfNU02MUw';
+        const TELEGRAM_CHAT_IDS = ['1987178564', '5046027651'];
+
+        let studentName = '';
+        let studentPhone = '';
+
+        const questions = [
+            // Elementary Level (A1) - 10 вопросов
+            {
+                question: "I ___ a student.",
+                options: ["am", "is", "are", "be"],
+                correct: 0,
+                level: "Elementary"
+            },
+            {
+                question: "Where ___ you live?",
+                options: ["are", "do", "is", "does"],
+                correct: 1,
+                level: "Elementary"
+            },
+            {
+                question: "She ___ coffee every morning.",
+                options: ["drink", "drinks", "drinking", "drank"],
+                correct: 1,
+                level: "Elementary"
+            },
+            {
+                question: "There ___ a book on the table.",
+                options: ["is", "are", "am", "be"],
+                correct: 0,
+                level: "Elementary"
+            },
+            {
+                question: "I ___ to the cinema yesterday.",
+                options: ["go", "goes", "went", "going"],
+                correct: 2,
+                level: "Elementary"
+            },
+            {
+                question: "My sister ___ very tall.",
+                options: ["is", "are", "am", "be"],
+                correct: 0,
+                level: "Elementary"
+            },
+            {
+                question: "They ___ English at school.",
+                options: ["study", "studies", "studying", "studied"],
+                correct: 0,
+                level: "Elementary"
+            },
+            {
+                question: "Can you ___ me your pen?",
+                options: ["give", "gives", "giving", "gave"],
+                correct: 0,
+                level: "Elementary"
+            },
+            {
+                question: "I have ___ apple.",
+                options: ["a", "an", "the", "some"],
+                correct: 1,
+                level: "Elementary"
+            },
+            {
+                question: "What time ___ you get up?",
+                options: ["are", "do", "is", "does"],
+                correct: 1,
+                level: "Elementary"
+            },
+            
+            // Pre-Intermediate Level (A2) - 10 вопросов
+            {
+                question: "I ___ in Bishkek since 2015.",
+                options: ["live", "am living", "have lived", "lived"],
+                correct: 2,
+                level: "Pre-Intermediate"
+            },
+            {
+                question: "If it ___ tomorrow, we'll stay home.",
+                options: ["rain", "rains", "will rain", "rained"],
+                correct: 1,
+                level: "Pre-Intermediate"
+            },
+            {
+                question: "She told me ___ early.",
+                options: ["come", "to come", "coming", "came"],
+                correct: 1,
+                level: "Pre-Intermediate"
+            },
+            {
+                question: "I'm looking forward ___ you again.",
+                options: ["see", "to see", "seeing", "to seeing"],
+                correct: 3,
+                level: "Pre-Intermediate"
+            },
+            {
+                question: "This is ___ interesting book I've ever read.",
+                options: ["more", "most", "the most", "the more"],
+                correct: 2,
+                level: "Pre-Intermediate"
+            },
+            {
+                question: "I ___ my homework when you called.",
+                options: ["did", "was doing", "have done", "do"],
+                correct: 1,
+                level: "Pre-Intermediate"
+            },
+            {
+                question: "He's been working here ___ three years.",
+                options: ["since", "for", "during", "from"],
+                correct: 1,
+                level: "Pre-Intermediate"
+            },
+            {
+                question: "Would you like ___ tea or coffee?",
+                options: ["some", "any", "a", "an"],
+                correct: 0,
+                level: "Pre-Intermediate"
+            },
+            {
+                question: "She's much ___ than her sister.",
+                options: ["tall", "taller", "tallest", "more tall"],
+                correct: 1,
+                level: "Pre-Intermediate"
+            },
+            {
+                question: "I don't have ___ money left.",
+                options: ["some", "any", "no", "none"],
+                correct: 1,
+                level: "Pre-Intermediate"
+            },
+            
+            // Intermediate Level (B1) - 10 вопросов
+            {
+                question: "By next year, I ___ English for five years.",
+                options: ["study", "will study", "will have studied", "am studying"],
+                correct: 2,
+                level: "Intermediate"
+            },
+            {
+                question: "The letter ___ yesterday.",
+                options: ["was sent", "sent", "has sent", "send"],
+                correct: 0,
+                level: "Intermediate"
+            },
+            {
+                question: "I'd rather ___ at home tonight.",
+                options: ["stay", "staying", "to stay", "stayed"],
+                correct: 0,
+                level: "Intermediate"
+            },
+            {
+                question: "Despite ___ hard, he failed the exam.",
+                options: ["study", "studying", "studied", "to study"],
+                correct: 1,
+                level: "Intermediate"
+            },
+            {
+                question: "The job ___ to someone else already.",
+                options: ["gave", "has given", "has been given", "was giving"],
+                correct: 2,
+                level: "Intermediate"
+            },
+            {
+                question: "I wish I ___ speak French fluently.",
+                options: ["can", "could", "am able to", "will be able to"],
+                correct: 1,
+                level: "Intermediate"
+            },
+            {
+                question: "The building ___ last year.",
+                options: ["completed", "was completed", "has completed", "completes"],
+                correct: 1,
+                level: "Intermediate"
+            },
+            {
+                question: "She asked me ___ I had finished my work.",
+                options: ["that", "if", "what", "when"],
+                correct: 1,
+                level: "Intermediate"
+            },
+            {
+                question: "I'm used to ___ early in the morning.",
+                options: ["wake up", "waking up", "wake", "woke up"],
+                correct: 1,
+                level: "Intermediate"
+            },
+            {
+                question: "Unless you ___ harder, you won't pass the exam.",
+                options: ["study", "will study", "studied", "don't study"],
+                correct: 0,
+                level: "Intermediate"
+            }
+        ];
+
+        let currentQuestion = 0;
+        let answers = [];
+        let score = 0;
+
+        function startQuiz() {
+            const name = document.getElementById('student-name').value.trim();
+            const phone = document.getElementById('student-phone').value.trim();
+            
+            if (!name || !phone) {
+                alert('Пожалуйста, заполните все поля!');
+                return;
+            }
+            
+            studentName = name;
+            studentPhone = phone;
+            
+            document.getElementById('user-info-container').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            
+            loadQuestion();
+        }
+
+        // Функция для отправки сообщения каждому chat_id отдельно
+        async function sendToTelegram(message) {
+            const successCount = { count: 0 };
+            
+            for (let chatId of TELEGRAM_CHAT_IDS) {
+                const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+                
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            chat_id: chatId,
+                            text: message,
+                            parse_mode: 'HTML'
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        successCount.count++;
+                        console.log(`Сообщение отправлено в чат ${chatId}`);
+                    } else {
+                        const errorData = await response.json();
+                        console.error(`Ошибка отправки в чат ${chatId}:`, errorData);
+                    }
+                } catch (error) {
+                    console.error(`Ошибка для чата ${chatId}:`, error);
+                }
+            }
+            
+            // Показать уведомление
+            showNotification(
+                successCount.count > 0 ? 
+                `Результат отправлен в ${successCount.count} чат(а)` : 
+                'Не удалось отправить результат в Telegram',
+                successCount.count > 0 ? 'success' : 'error'
+            );
+        }
+
+        function showNotification(message, type = 'success') {
+            // Удалить существующие уведомления
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Показать уведомление
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Скрыть уведомление через 5 секунд
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 5000);
+        }
+
+        function loadQuestion() {
+            const question = questions[currentQuestion];
+            document.getElementById('question-number').textContent = `Вопрос ${currentQuestion + 1} из ${questions.length}`;
+            document.getElementById('question-text').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.textContent = option;
+                optionElement.onclick = () => selectOption(index);
+                optionElement.dataset.index = index;
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            updateProgress();
+            updateButtons();
+            
+            // Restore previous answer if exists
+            if (answers[currentQuestion] !== undefined) {
+                selectOption(answers[currentQuestion]);
+            }
+        }
+
+        function selectOption(index) {
+            // Remove previous selection
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Add selection to clicked option
+            document.querySelector(`[data-index="${index}"]`).classList.add('selected');
+            
+            // Store answer
+            answers[currentQuestion] = index;
+            
+            // Enable next button
+            document.getElementById('next-btn').disabled = false;
+        }
+
+        function nextQuestion() {
+            if (answers[currentQuestion] === undefined) {
+                alert('Пожалуйста, выберите ответ!');
+                return;
+            }
+            
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion();
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+        }
+
+        function updateButtons() {
+            document.getElementById('prev-btn').disabled = currentQuestion === 0;
+            document.getElementById('next-btn').disabled = answers[currentQuestion] === undefined;
+            
+            if (currentQuestion === questions.length - 1) {
+                document.getElementById('next-btn').textContent = 'Завершить тест';
+            } else {
+                document.getElementById('next-btn').textContent = 'Далее →';
+            }
+        }
+
+        function finishQuiz() {
+            // Calculate score
+            score = 0;
+            for (let i = 0; i < questions.length; i++) {
+                if (answers[i] === questions[i].correct) {
+                    score++;
+                }
+            }
+            
+            showResults();
+        }
+
+        function showResults() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('result-container').classList.remove('hidden');
+            
+            const percentage = Math.round((score / questions.length) * 100);
+            document.getElementById('result-score').textContent = `${score}/${questions.length} (${percentage}%)`;
+            
+            let level, description;
+            
+            if (percentage >= 85) {
+                level = "Upper-Intermediate (B2)";
+                description = "Отличный результат! Вы владеете английским языком на уровне выше среднего. Готовы к изучению более сложных тем и подготовке к международным экзаменам.";
+            } else if (percentage >= 70) {
+                level = "Intermediate (B1)";
+                description = "Очень хорошо! У вас средний уровень английского языка. Вы можете общаться на большинство тем, но есть области для улучшения.";
+            } else if (percentage >= 50) {
+                level = "Pre-Intermediate (A2)";
+                description = "Хороший результат! У вас базовый уровень английского языка. Рекомендуем курсы для развития навыков общения и расширения словарного запаса.";
+            } else if (percentage >= 30) {
+                level = "Elementary (A1)";
+                description = "Вы на начальном этапе изучения английского языка. Рекомендуем курсы для изучения основ грамматики и базовой лексики.";
+            } else {
+                level = "Beginner (A0)";
+                description = "Добро пожаловать в мир английского языка! Рекомендуем начать с курсов для начинающих с самых основ.";
+            }
+            
+            document.getElementById('result-level').textContent = `Ваш уровень: ${level}`;
+            document.getElementById('result-description').textContent = description;
+            
+            // Отправка результата в Telegram
+            const telegramMessage = `🎓 <b>Новый результат теста Envio English Level Test</b>
+
+👤 <b>Имя:</b> ${studentName}
+📞 <b>Телефон:</b> ${studentPhone}
+
+📊 <b>Результат:</b> ${score}/${questions.length} (${percentage}%)
+📈 <b>Уровень:</b> ${level}
+
+🕒 <b>Дата:</b> ${new Date().toLocaleString('ru-RU')}`;
+            
+            sendToTelegram(telegramMessage);
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            answers = [];
+            score = 0;
+            studentName = '';
+            studentPhone = '';
+            
+            document.getElementById('user-info-container').classList.remove('hidden');
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('result-container').classList.add('hidden');
+            
+            // Очистка формы
+            document.getElementById('student-name').value = '';
+            document.getElementById('student-phone').value = '';
+        }
+    </script>
+</body>
+</html>

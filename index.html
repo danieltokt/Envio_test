@@ -277,6 +277,41 @@
             transform: translateX(0);
         }
 
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        .status-indicator.saving {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .status-indicator.saved {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
@@ -344,14 +379,17 @@
                 <div class="result-level" id="result-level">Уровень: Beginner</div>
                 <div class="result-description" id="result-description"></div>
                 
+                <div id="save-status" class="status-indicator saving" style="display: none;">
+                    <div class="spinner"></div>
+                    Сохранение результата...
+                </div>
+                
                 <div class="contact-info">
                     <h3>Готовы улучшить свой английский?</h3>
                     <p>Приходите в Envio — курсы английского языка в Бишкеке!</p>
                     <p><strong>📞 Написать в WhatsApp:</strong> <a href="https://wa.me/996551887785" target="_blank">+996551887785</a></p>
                     <p><strong>📍 Адрес:</strong> г. Бишкек, пр. Чынгыза Айтматова, 4</p>
                 </div>
-
-                
             </div>
         </div>
     </div>
@@ -360,6 +398,9 @@
         // Telegram Bot Configuration
         const TELEGRAM_BOT_TOKEN = '8095854142:AAH6s7G9bxMIewdw90tqcrl042gfNU02MUw';
         const TELEGRAM_CHAT_IDS = ['1987178564', '5046027651'];
+
+        // Google Sheets Configuration
+        const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwZ-vfOXTzKb2MatgONrY6Z6bSw8oFYZWUWApjt1abnH_WWFGH78PujaulZOr3xzsvSbQ/exec';
 
         let studentName = '';
         let studentPhone = '';
@@ -574,6 +615,43 @@
             loadQuestion();
         }
 
+        // Функция для отправки данных в Google Sheets
+        async function saveToGoogleSheets(data) {
+            const statusElement = document.getElementById('save-status');
+            statusElement.style.display = 'inline-flex';
+            statusElement.className = 'status-indicator saving';
+            statusElement.innerHTML = '<div class="spinner"></div>Сохранение результата...';
+            
+            try {
+                const response = await fetch(GOOGLE_SHEETS_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        statusElement.className = 'status-indicator saved';
+                        statusElement.innerHTML = '✅ Результат сохранён';
+                        console.log('Данные успешно сохранены в Google Sheets');
+                        return true;
+                    } else {
+                        throw new Error(result.error || 'Ошибка сохранения');
+                    }
+                } else {
+                    throw new Error('Ошибка сети');
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения в Google Sheets:', error);
+                // Скрываем индикатор статуса при ошибке
+                statusElement.style.display = 'none';
+                return false;
+            }
+        }
+
         // Функция для отправки сообщения каждому chat_id отдельно
         async function sendToTelegram(message) {
             const successCount = { count: 0 };
@@ -606,13 +684,10 @@
                 }
             }
             
-            // Показать уведомление
-            showNotification(
-                successCount.count > 0 ? 
-                `Результат отправлен в ${successCount.count} чат(а)` : 
-                'Не удалось отправить результат в Telegram',
-                successCount.count > 0 ? 'success' : 'error'
-            );
+            // Показать уведомление только при успешной отправке
+            if (successCount.count > 0) {
+                showNotification(`Результат отправлен в ${successCount.count} чат(а)`, 'success');
+            }
         }
 
         function showNotification(message, type = 'success') {
@@ -762,6 +837,23 @@
             document.getElementById('result-level').textContent = `Ваш уровень: ${level}`;
             document.getElementById('result-description').textContent = description;
             
+            // Подготовка данных для сохранения
+            const now = new Date();
+            const resultData = {
+                name: studentName,
+                phone: studentPhone,
+                score: score,
+                totalQuestions: questions.length,
+                percentage: percentage,
+                level: level,
+                date: now.toLocaleDateString('ru-RU'),
+                time: now.toLocaleTimeString('ru-RU'),
+                timestamp: now.toISOString()
+            };
+            
+            // Сохранение в Google Sheets
+            saveToGoogleSheets(resultData);
+            
             // Отправка результата в Telegram
             const telegramMessage = `🎓 <b>Новый результат теста Envio English Level Test</b>
 
@@ -771,7 +863,7 @@
 📊 <b>Результат:</b> ${score}/${questions.length} (${percentage}%)
 📈 <b>Уровень:</b> ${level}
 
-🕒 <b>Дата:</b> ${new Date().toLocaleString('ru-RU')}`;
+🕒 <b>Дата:</b> ${now.toLocaleString('ru-RU')}`;
             
             sendToTelegram(telegramMessage);
         }
@@ -786,6 +878,8 @@
             document.getElementById('user-info-container').classList.remove('hidden');
             document.getElementById('quiz-container').classList.add('hidden');
             document.getElementById('result-container').classList.add('hidden');
+            
+            // Очистка
             
             // Очистка формы
             document.getElementById('student-name').value = '';

@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Envio English Level Test - Бишкек</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -64,7 +69,7 @@
             height: 100%;
             background: linear-gradient(90deg, #8B5CF6, #A855F7);
             transition: width 0.3s ease;
-            border-radius: 4px;
+            border-radius: 4px; 
         }
 
         .question-card {
@@ -298,6 +303,11 @@
             color: #059669;
         }
 
+        .status-indicator.error {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
         .spinner {
             width: 16px;
             height: 16px;
@@ -395,11 +405,25 @@
     </div>
 
     <script>
-        // Telegram Bot Configuration
+        // Firebase Configuration - ЗАМЕНИТЕ НА ВАШИ ДАННЫЕ
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjHUgdnRm6oGsInwboJ1C7nxMoI-NDVTs",
+            authDomain: "envio-english-test.firebaseapp.com",
+            projectId: "envio-english-test",
+            storageBucket: "envio-english-test.firebasestorage.app",
+            messagingSenderId: "661895744651",
+            appId: "1:661895744651:web:9f702fd667bd4244e9d88e",
+            measurementId: "G-76LJ4CDLM2"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Telegram Bot Configuration (оставляем для уведомлений)
         const TELEGRAM_BOT_TOKEN = '8095854142:AAH6s7G9bxMIewdw90tqcrl042gfNU02MUw';
         const TELEGRAM_CHAT_IDS = ['1987178564', '5046027651'];
-        // Google Sheets Configuration - ИСПРАВЛЕНО: убрана лишняя точка с запятой
-        const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyI4XNojy-KUYt6elgHMW8rGefxdQIQDGYpwx62cCJ-0d3TVJpp3ggjpRHcxpGokiQ5/exec';
+
         let studentName = '';
         let studentPhone = '';
 
@@ -613,67 +637,50 @@
             loadQuestion();
         }
 
-        // УЛУЧШЕННАЯ функция для отправки данных в Google Sheets
-        async function saveToGoogleSheets(data) {
+        // Функция для сохранения в Firebase Firestore
+        async function saveToFirestore(data) {
             const statusElement = document.getElementById('save-status');
             statusElement.style.display = 'inline-flex';
             statusElement.className = 'status-indicator saving';
             statusElement.innerHTML = '<div class="spinner"></div>Сохранение результата...';
             
             try {
-                console.log('Отправляем данные в Google Sheets:', data);
+                console.log('Отправляем данные в Firebase:', data);
                 
-                const response = await fetch(GOOGLE_SHEETS_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(data)
+                const docRef = await db.collection('test_results').add({
+                    name: data.name,
+                    phone: data.phone,
+                    score: data.score,
+                    totalQuestions: data.totalQuestions,
+                    percentage: data.percentage,
+                    level: data.level,
+                    date: data.date,
+                    time: data.time,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdAt: new Date().toISOString()
                 });
                 
-                console.log('Статус ответа:', response.status);
+                console.log('Документ успешно создан с ID:', docRef.id);
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                statusElement.className = 'status-indicator saved';
+                statusElement.innerHTML = '✅ Результат сохранён в базу данных';
                 
-                const result = await response.json();
-                console.log('Результат от Google Sheets:', result);
+                showNotification('Результат успешно сохранён!', 'success');
                 
-                if (result.success) {
-                    statusElement.className = 'status-indicator saved';
-                    statusElement.innerHTML = '✅ Результат сохранён';
-                    console.log('Данные успешно сохранены в Google Sheets');
-                    
-                    // Добавляем ссылку на таблицу в интерфейс
-                    if (result.spreadsheetUrl) {
-                        const linkElement = document.createElement('a');
-                        linkElement.href = result.spreadsheetUrl;
-                        linkElement.target = '_blank';
-                        linkElement.textContent = 'Посмотреть в Google Sheets';
-                        linkElement.style.marginLeft = '10px';
-                        linkElement.style.color = '#4285f4';
-                        statusElement.appendChild(linkElement);
-                    }
-                    
-                    return result;
-                } else {
-                    throw new Error(result.error || 'Ошибка сохранения');
-                }
+                return { success: true, id: docRef.id };
+                
             } catch (error) {
-                console.error('Ошибка сохранения в Google Sheets:', error);
+                console.error('Ошибка сохранения в Firebase:', error);
                 statusElement.className = 'status-indicator error';
                 statusElement.innerHTML = '❌ Ошибка сохранения';
                 
-                // Показываем детальную ошибку в консоли
-                console.error('Детали ошибки:', error);
+                showNotification('Ошибка сохранения результата', 'error');
                 
-                return false;
+                return { success: false, error: error.message };
             }
         }
 
-        // УЛУЧШЕННАЯ функция для отправки сообщения в Telegram
+        // Функция для отправки уведомления в Telegram
         async function sendToTelegram(message) {
             const successCount = { count: 0 };
             const errors = [];
@@ -696,7 +703,7 @@
                     
                     if (response.ok) {
                         successCount.count++;
-                        console.log(`Сообщение отправлено в чат ${chatId}`);
+                        console.log(`Уведомление отправлено в чат ${chatId}`);
                     } else {
                         const errorData = await response.json();
                         console.error(`Ошибка отправки в чат ${chatId}:`, errorData);
@@ -708,19 +715,16 @@
                 }
             }
             
-            // Показать уведомление о результате
             if (successCount.count > 0) {
-                showNotification(`Результат отправлен в ${successCount.count} чат(а)`, 'success');
+                console.log(`Уведомления отправлены в ${successCount.count} чат(а)`);
             }
             
             if (errors.length > 0) {
-                console.error('Ошибки при отправке в Telegram:', errors);
-                showNotification('Некоторые сообщения не были доставлены', 'warning');
+                console.error('Ошибки при отправке уведомлений:', errors);
             }
         }
 
         function showNotification(message, type = 'success') {
-            // Удалить существующие уведомления
             const existingNotification = document.querySelector('.notification');
             if (existingNotification) {
                 existingNotification.remove();
@@ -732,12 +736,10 @@
             
             document.body.appendChild(notification);
             
-            // Показать уведомление
             setTimeout(() => {
                 notification.classList.add('show');
             }, 100);
             
-            // Скрыть уведомление через 5 секунд
             setTimeout(() => {
                 notification.classList.remove('show');
                 setTimeout(() => {
@@ -766,25 +768,18 @@
             updateProgress();
             updateButtons();
             
-            // Restore previous answer if exists
             if (answers[currentQuestion] !== undefined) {
                 selectOption(answers[currentQuestion]);
             }
         }
 
         function selectOption(index) {
-            // Remove previous selection
             document.querySelectorAll('.option').forEach(opt => {
                 opt.classList.remove('selected');
             });
             
-            // Add selection to clicked option
             document.querySelector(`[data-index="${index}"]`).classList.add('selected');
-            
-            // Store answer
             answers[currentQuestion] = index;
-            
-            // Enable next button
             document.getElementById('next-btn').disabled = false;
         }
 
@@ -826,7 +821,6 @@
         }
 
         function finishQuiz() {
-            // Calculate score
             score = 0;
             for (let i = 0; i < questions.length; i++) {
                 if (answers[i] === questions[i].correct) {
@@ -882,77 +876,45 @@
             
             console.log('Данные для сохранения:', resultData);
             
-            // Сохранение в Google Sheets
-            saveToGoogleSheets(resultData);
+            // Сохранение в Firebase
+            saveToFirestore(resultData);
             
-            // Отправка результата в Telegram
+            // Отправка уведомления в Telegram
+            // Отправка уведомления в Telegram
             const telegramMessage = `🎓 <b>Новый результат теста Envio English Level Test</b>
 
 👤 <b>Имя:</b> ${studentName}
-📞 <b>Телефон:</b> ${studentPhone}
-
+📱 <b>Телефон:</b> ${studentPhone}
 📊 <b>Результат:</b> ${score}/${questions.length} (${percentage}%)
-📈 <b>Уровень:</b> ${level}
+🎯 <b>Уровень:</b> ${level}
+📅 <b>Дата:</b> ${now.toLocaleDateString('ru-RU')}
+🕐 <b>Время:</b> ${now.toLocaleTimeString('ru-RU')}
 
-🕒 <b>Дата:</b> ${now.toLocaleString('ru-RU')}
-
-📋 <b>Подробности:</b>
-${description}`;
+#EnvioTest #Бишкек #АнглийскийЯзык`;
             
             sendToTelegram(telegramMessage);
         }
 
-        function restartQuiz() {
-            currentQuestion = 0;
-            answers = [];
-            score = 0;
-            studentName = '';
-            studentPhone = '';
-            
-            document.getElementById('user-info-container').classList.remove('hidden');
-            document.getElementById('quiz-container').classList.add('hidden');
-            document.getElementById('result-container').classList.add('hidden');
-            
-            // Очистка формы
-            document.getElementById('student-name').value = '';
-            document.getElementById('student-phone').value = '';
-            
-            // Скрыть статус сохранения
-            const statusElement = document.getElementById('save-status');
-            if (statusElement) {
-                statusElement.style.display = 'none';
+        // Обработка ошибок Firebase
+        window.addEventListener('error', function(e) {
+            console.error('Глобальная ошибка:', e.error);
+            if (e.error && e.error.message && e.error.message.includes('Firebase')) {
+                showNotification('Ошибка подключения к базе данных', 'error');
             }
-        }
-
-        // Функция для тестирования подключения (для отладки)
-        async function testConnection() {
-            console.log('Тестируем подключение к Google Sheets...');
-            try {
-                const response = await fetch(GOOGLE_SHEETS_URL, {
-                    method: 'GET',
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log('Тест подключения успешен:', result);
-                    showNotification('Подключение к Google Sheets работает!', 'success');
-                } else {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-            } catch (error) {
-                console.error('Ошибка подключения:', error);
-                showNotification('Ошибка подключения к Google Sheets', 'error');
-            }
-        }
+        });
 
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Тест английского языка загружен');
-            console.log('Google Sheets URL:', GOOGLE_SHEETS_URL);
+            console.log('Страница загружена, Firebase инициализирован');
             
-            // Можно раскомментировать для тестирования подключения
-            // testConnection();
+            // Проверка подключения к Firebase
+            if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+                console.log('Firebase успешно подключен');
+            } else {
+                console.warn('Firebase не подключен или не инициализирован');
+            }
         });
     </script>
 </body>
 </html>
+                

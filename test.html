@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Envio - Test Results</title>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background: #f4f4f4;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background-color: #6c63ff;
+      color: white;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+  </style>
+</head>
+<body>
+  <h1>Результаты тестов студентов</h1>
+  <table id="results-table">
+    <thead>
+      <tr>
+        <th>Имя</th>
+        <th>Телефон</th>
+        <th>Баллы</th>
+        <th>Из</th>
+        <th>%</th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+
+  <script>
+    const firebaseConfig = {
+            apiKey: "AIzaSyBjHUgdnRm6oGsInwboJ1C7nxMoI-NDVTs",
+            authDomain: "envio-english-test.firebaseapp.com",
+            projectId: "envio-english-test",
+            storageBucket: "envio-english-test.firebasestorage.app",
+            messagingSenderId: "661895744651",
+            appId: "1:661895744651:web:9f702fd667bd4244e9d88e",
+            measurementId: "G-76LJ4CDLM2"
+        };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    db.collection("test-results").get().then(snapshot => {
+      const tbody = document.getElementById("table-body");
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data.name || "-"}</td>
+          <td>${data.phone || "-"}</td>
+          <td>${data.score || 0}</td>
+          <td>${data.totalQuestions || 30}</td>
+          <td>${data.percent || 0}%</td>
+        `;
+        tbody.appendChild(row);
+      });
+    });
+  </script>
+</body>
+</html>

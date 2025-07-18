@@ -389,10 +389,10 @@
                 <div class="result-level" id="result-level">Уровень: Beginner</div>
                 <div class="result-description" id="result-description"></div>
                 
-                <div id="save-status" class="status-indicator saving" style="display: none;">
+                <!-- <div id="save-status" class="status-indicator saving" style="display: none;">
                     <div class="spinner"></div>
                     Сохранение результата...
-                </div>
+                </div> -->
                 
                 <div class="contact-info">
                     <h3>Готовы улучшить свой английский?</h3>
@@ -639,10 +639,10 @@
 
         // Функция для сохранения в Firebase Firestore
         async function saveToFirestore(data) {
-            const statusElement = document.getElementById('save-status');
-            statusElement.style.display = 'inline-flex';
-            statusElement.className = 'status-indicator saving';
-            statusElement.innerHTML = '<div class="spinner"></div>Сохранение результата...';
+            // const statusElement = document.getElementById('save-status');
+            // statusElement.style.display = 'inline-flex';
+            // statusElement.className = 'status-indicator saving';
+            // statusElement.innerHTML = '<div class="spinner"></div>Сохранение результата...';
             
             try {
                 console.log('Отправляем данные в Firebase:', data);
@@ -662,8 +662,8 @@
                 
                 console.log('Документ успешно создан с ID:', docRef.id);
                 
-                statusElement.className = 'status-indicator saved';
-                statusElement.innerHTML = '✅ Результат сохранён в базу данных';
+                // statusElement.className = 'status-indicator saved';
+                // statusElement.innerHTML = '✅ Результат сохранён в базу данных';
                 
                 showNotification('Результат успешно сохранён!', 'success');
                 
@@ -671,8 +671,8 @@
                 
             } catch (error) {
                 console.error('Ошибка сохранения в Firebase:', error);
-                statusElement.className = 'status-indicator error';
-                statusElement.innerHTML = '❌ Ошибка сохранения';
+                // statusElement.className = 'status-indicator error';
+                // statusElement.innerHTML = '❌ Ошибка сохранения';
                 
                 showNotification('Ошибка сохранения результата', 'error');
                 
@@ -917,4 +917,4 @@
     </script>
 </body>
 </html>
-                
+          
